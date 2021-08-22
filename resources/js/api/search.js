@@ -7,3 +7,10 @@ export function userSearch(name) {
     params: { name },
   });
 }
+export function orderSearch(name) {
+  return request({
+    url: '/search/order',
+    method: 'get',
+    params: { name },
+  });
+}

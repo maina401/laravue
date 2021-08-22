@@ -59,6 +59,11 @@ export default {
     selectExcel: 'Export Selected',
     mergeHeader: 'Merge Header',
     uploadExcel: 'Upload Excel',
+    createOrder: 'New Order',
+    listOrder: 'All Orders',
+    editOrder: 'Edit Order',
+    deleteOrder: 'Delete Order',
+    approveOrder: 'Approve Order',
     zip: 'Zip',
     pdf: 'PDF',
     exportZip: 'Export Zip',
@@ -162,7 +167,7 @@ export default {
     placeholder: 'Please enter the file name(default file)',
   },
   pdf: {
-    tips: 'Here we use window.print() to implement the feature of downloading pdf.',
+    tips: 'Download in pdf format',
   },
   theme: {
     change: 'Change Theme',
@@ -188,6 +193,23 @@ export default {
     'confirmPassword': 'Confirm password',
     'name': 'Name',
     'email': 'Email',
+  },
+  order: {
+    'category': 'Category',
+    'deadline': 'Due Date',
+    'description': 'Order Description',
+    'attachments': 'Additional Files',
+    'title': 'Order Title',
+    'password': 'Password',
+    'confirmPassword': 'Confirm password',
+    'name': 'Name',
+    'email': 'Email',
+    error: {
+      'date': 'The order deadline is required',
+      'category': 'The order category is required',
+      'title': 'The title is required',
+      'description': 'Enter the order description',
+    },
   },
   roles: {
     description: {
