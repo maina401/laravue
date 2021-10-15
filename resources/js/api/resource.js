@@ -1,7 +1,7 @@
 import request from '@/utils/request';
 
 /**
- * Simple RESTful resource class
+ * Simple RESTful resource clas
  */
 class Resource {
   constructor(uri) {

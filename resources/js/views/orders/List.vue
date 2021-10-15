@@ -1,17 +1,43 @@
 <template>
   <div class="app-container">
     <div class="filter-container">
-      <el-input v-model="query.keyword" :placeholder="$t('table.keyword')" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter" />
-      <el-select v-model="query.role" :placeholder="$t('table.role')" clearable style="width: 90px" class="filter-item" @change="handleFilter">
+      <el-input
+        v-model="query.keyword"
+        :placeholder="$t('table.keyword')"
+        style="width: 200px;"
+        class="filter-item"
+        @keyup.enter.native="handleFilter"
+      />
+      <el-select
+        v-model="query.role"
+        :placeholder="$t('table.role')"
+        clearable
+        style="width: 90px"
+        class="filter-item"
+        @change="handleFilter"
+      >
         <el-option v-for="item in roles" :key="item" :label="item | uppercaseFirst" :value="item" />
       </el-select>
       <el-button v-waves class="filter-item" type="primary" icon="el-icon-search" @click="handleFilter">
         {{ $t('table.search') }}
       </el-button>
-      <el-button class="filter-item" style="margin-left: 10px;" type="primary" icon="el-icon-plus" @click="handleCreate">
+      <el-button
+        class="filter-item"
+        style="margin-left: 10px;"
+        type="primary"
+        icon="el-icon-plus"
+        @click="handleCreate"
+      >
         {{ $t('table.add') }}
       </el-button>
-      <el-button v-waves :loading="downloading" class="filter-item" type="primary" icon="el-icon-download" @click="handleDownload">
+      <el-button
+        v-waves
+        :loading="downloading"
+        class="filter-item"
+        type="primary"
+        icon="el-icon-download"
+        @click="handleDownload"
+      >
         {{ $t('table.export') }}
       </el-button>
     </div>
@@ -48,17 +74,37 @@
               Edit
             </el-button>
           </router-link>
-          <el-button v-if="!scope.row.roles.includes('admin')" v-permission="['manage permission']" type="warning" size="small" icon="el-icon-edit" @click="handleEditPermissions(scope.row.id);">
+          <el-button
+            v-if="!scope.row.roles.includes('admin')"
+            v-permission="['manage permission']"
+            type="warning"
+            size="small"
+            icon="el-icon-edit"
+            @click="handleEditPermissions(scope.row.id);"
+          >
             Permissions
           </el-button>
-          <el-button v-if="scope.row.roles.includes('visitor')" v-permission="['manage user']" type="danger" size="small" icon="el-icon-delete" @click="handleDelete(scope.row.id, scope.row.name);">
+          <el-button
+            v-if="scope.row.roles.includes('visitor')"
+            v-permission="['manage user']"
+            type="danger"
+            size="small"
+            icon="el-icon-delete"
+            @click="handleDelete(scope.row.id, scope.row.name);"
+          >
             Delete
           </el-button>
         </template>
       </el-table-column>
     </el-table>
 
-    <pagination v-show="total>0" :total="total" :page.sync="query.page" :limit.sync="query.limit" @pagination="getList" />
+    <pagination
+      v-show="total>0"
+      :total="total"
+      :page.sync="query.page"
+      :limit.sync="query.limit"
+      @pagination="getList"
+    />
 
     <el-dialog :visible.sync="dialogPermissionVisible" :title="'Edit Permissions - ' + currentUser.name">
       <div v-if="currentUser.name" v-loading="dialogPermissionLoading" class="form-container">
@@ -66,14 +112,30 @@
           <div class="block">
             <el-form :model="currentUser" label-width="80px" label-position="top">
               <el-form-item label="Menus">
-                <el-tree ref="menuPermissions" :data="normalizedMenuPermissions" :default-checked-keys="permissionKeys(userMenuPermissions)" :props="permissionProps" show-checkbox node-key="id" class="permission-tree" />
+                <el-tree
+                  ref="menuPermissions"
+                  :data="normalizedMenuPermissions"
+                  :default-checked-keys="permissionKeys(userMenuPermissions)"
+                  :props="permissionProps"
+                  show-checkbox
+                  node-key="id"
+                  class="permission-tree"
+                />
               </el-form-item>
             </el-form>
           </div>
           <div class="block">
             <el-form :model="currentUser" label-width="80px" label-position="top">
               <el-form-item label="Permissions">
-                <el-tree ref="otherPermissions" :data="normalizedOtherPermissions" :default-checked-keys="permissionKeys(userOtherPermissions)" :props="permissionProps" show-checkbox node-key="id" class="permission-tree" />
+                <el-tree
+                  ref="otherPermissions"
+                  :data="normalizedOtherPermissions"
+                  :default-checked-keys="permissionKeys(userOtherPermissions)"
+                  :props="permissionProps"
+                  show-checkbox
+                  node-key="id"
+                  class="permission-tree"
+                />
               </el-form-item>
             </el-form>
           </div>
@@ -92,7 +154,14 @@
 
     <el-dialog :title="'Create new Order'" :visible.sync="dialogFormVisible">
       <div v-loading="orderCreating" class="form-container">
-        <el-form ref="userForm" :rules="rules" :model="newOrder" label-position="left" label-width="150px" style="max-width: 500px;">
+        <el-form
+          ref="orderForm"
+          :rules="rules"
+          :model="newOrder"
+          label-position="left"
+          label-width="150px"
+          style="max-width: 500px;"
+        >
           <el-form-item :label="$t('order.category')" prop="category">
             <el-select v-model="newOrder.category" class="filter-item" placeholder="Please select Subject">
               <el-option v-for="item in orderCategories" :key="item" :label="item | uppercaseFirst" :value="item" />
@@ -124,7 +193,13 @@
           </el-form-item>
           <el-form-item :label="$t('order.attachments')" prop="attachments">
             <div class="editor-container">
-              <dropzone id="myVueDropzone" v-model="newOrder.attachment" url="https://httpbin.org/post" @dropzone-removedFile="dropzoneR" @dropzone-success="dropzoneS" />
+              <dropzone
+                id="myVueDropzone"
+                v-model="newOrder.attachment"
+                url="https://httpbin.org/post"
+                @dropzone-removedFile="dropzoneR"
+                @dropzone-success="dropzoneS"
+              />
             </div>
           </el-form-item>
         </el-form>
@@ -132,7 +207,7 @@
           <el-button @click="dialogFormVisible = false">
             {{ $t('table.cancel') }}
           </el-button>
-          <el-button type="primary" @click="createUser()">
+          <el-button type="primary" @click="createOrder()">
             {{ $t('table.confirm') }}
           </el-button>
         </div>
@@ -141,13 +216,14 @@
   </div>
 </template>
 <style scoped>
-.editor-content{
+.editor-content {
   margin-top: 20px;
 }
 </style>
 <script>
 import Pagination from '@/components/Pagination'; // Secondary package based on el-pagination
 import UserResource from '@/api/user';
+import OrderResource from '@/api/orders';
 import Resource from '@/api/resource';
 import waves from '@/directive/waves'; // Waves directive
 import permission from '@/directive/permission'; // Permission directive
@@ -156,10 +232,11 @@ import Tinymce from '@/components/Tinymce'; // Import Tiny Editor
 import Dropzone from '@/components/Dropzone';// for the drG nd drop
 
 const userResource = new UserResource();
+const orderResource = new OrderResource();
 const permissionResource = new Resource('permissions');
 
 export default {
-  name: 'UserList',
+  name: 'Orderist',
   components: { Pagination, Tinymce, Dropzone },
   directives: { waves, permission },
   data() {
@@ -193,7 +270,11 @@ export default {
         title: [{ required: true, message: 'Title is required', trigger: 'blur' }],
         date: [{ required: true, message: 'Date is required', trigger: 'blur' }],
         description: [
-          { required: true, message: 'A description is required. It will help writers understand it more.', trigger: 'blur' },
+          {
+            required: true,
+            message: 'A description is required. It will help writers understand it more.',
+            trigger: 'blur',
+          },
           { length: 100, message: 'Enter a description that is at least 100 charachters', trigger: 'blur' },
         ],
       },
@@ -306,7 +387,7 @@ export default {
       this.resetNewOrder();
       this.dialogFormVisible = true;
       this.$nextTick(() => {
-        this.$refs['userForm'].clearValidate();
+        this.$refs['orderForm'].clearValidate();
       });
     },
     handleDelete(id, name) {
@@ -348,34 +429,28 @@ export default {
         this.$refs.otherPermissions.setCheckedKeys(this.permissionKeys(this.userOtherPermissions));
       });
     },
-    createUser() {
-      this.$refs['userForm'].validate((valid) => {
-        if (valid) {
-          this.newOrder.title = [this.newOrder.title];
-          this.orderCreating = true;
-          userResource
-            .store(this.newOrder)
-            .then(response => {
-              this.$message({
-                message: 'New order ' + this.newOrder.title + '(' + this.newOrder.category + ') has been created successfully.',
-                type: 'success',
-                duration: 5 * 1000,
-              });
-              this.resetNewOrder();
-              this.dialogFormVisible = false;
-              this.handleFilter();
-            })
-            .catch(error => {
-              console.log(error);
-            })
-            .finally(() => {
-              this.orderCreating = false;
-            });
-        } else {
-          console.log('error submit!!');
-          return false;
-        }
-      });
+    createOrder() {
+      console.log('Form Is valid. Creating Order');
+      this.newOrder.title = [this.newOrder.title];
+      this.orderCreating = true;
+      orderResource
+        .store(this.newOrder)
+        .then(response => {
+          this.$message({
+            message: 'New order ' + this.newOrder.title + '(' + this.newOrder.category + ') has been created successfully.',
+            type: 'success',
+            duration: 5 * 1000,
+          });
+          this.resetNewOrder();
+          this.dialogFormVisible = false;
+          this.handleFilter();
+        })
+        .catch(error => {
+          console.log(error);
+        })
+        .finally(() => {
+          this.orderCreating = false;
+        });
     },
     resetNewOrder() {
       this.newOrder = {
@@ -412,7 +487,9 @@ export default {
       return permissions.map(permssion => permssion.id);
     },
     classifyPermissions(permissions) {
-      const all = []; const menu = []; const other = [];
+      const all = [];
+      const menu = [];
+      const other = [];
       permissions.forEach(permission => {
         const permissionName = permission.name;
         all.push(permission);
@@ -426,7 +503,11 @@ export default {
     },
 
     normalizeMenuPermission(permission) {
-      return { id: permission.id, name: this.$options.filters.uppercaseFirst(permission.name.substring(10)), disabled: permission.disabled || false };
+      return {
+        id: permission.id,
+        name: this.$options.filters.uppercaseFirst(permission.name.substring(10)),
+        disabled: permission.disabled || false,
+      };
     },
 
     normalizePermission(permission) {
@@ -464,25 +545,30 @@ export default {
 .edit-input {
   padding-right: 100px;
 }
+
 .cancel-btn {
   position: absolute;
   right: 15px;
   top: 10px;
 }
+
 .dialog-footer {
   text-align: left;
   padding-top: 0;
   margin-left: 150px;
 }
+
 .app-container {
   flex: 1;
   justify-content: space-between;
   font-size: 14px;
   padding-right: 8px;
+
   .block {
     float: left;
     min-width: 250px;
   }
+
   .clear-left {
     clear: left;
   }

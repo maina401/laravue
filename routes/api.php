@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\OrdersController;
 use App\Http\Resources\UserResource;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -33,8 +34,12 @@ Route::namespace('Api')->group(function() {
         Route::apiResource('roles', 'RoleController')->middleware('permission:' . Acl::PERMISSION_PERMISSION_MANAGE);
         Route::apiResource('users', 'UserController')->middleware('permission:' . Acl::PERMISSION_USER_MANAGE);
         Route::apiResource('permissions', 'PermissionController')->middleware('permission:' . Acl::PERMISSION_PERMISSION_MANAGE);
-
+      //  Route::apiResource('orders', 'OrdersController');
         // Custom routes
+        Route::post('orders', 'OrdersController@store');
+
+
+
         Route::put('users/{user}', 'UserController@update');
         Route::get('users/{user}/permissions', 'UserController@permissions')->middleware('permission:' . Acl::PERMISSION_PERMISSION_MANAGE);
         Route::put('users/{user}/permissions', 'UserController@updatePermissions')->middleware('permission:' .Acl::PERMISSION_PERMISSION_MANAGE);
@@ -61,7 +66,6 @@ Route::get('/table/list', function () {
 
     return response()->json(new JsonResponse(['items' => $data]));
 });
-
 Route::get('/orders', function () {
     $rowsNumber = 8;
     $data = [];
@@ -69,7 +73,7 @@ Route::get('/orders', function () {
         $row = [
             'order_no' => 'LARAVUE' . mt_rand(1000000, 9999999),
             'price' => mt_rand(10000, 999999),
-            'status' => Faker::randomInArray(['success', 'pending']),
+            'status' => Faker::randomInArray(['completed', 'in-progress','unassigned','revision','refunded']),
         ];
 
         $data[] = $row;

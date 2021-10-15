@@ -28,49 +28,22 @@ class OrdersController extends Controller
         $this->middleware('permission:order-edit', ['only' => ['edit','update']]);
         $this->middleware('permission:order-delete', ['only' => ['destroy']]);
     }
-//    /**
-//     * Display a listing of the resource.
-//     *
-//     * @return Application|Factory|View
-//     */
-//    public function index(): View|Factory|Application
-//    {
-//        if (auth()->user()->hasRole('Admin')) {
-//            $orders = Order::latest()->paginate(5);
-//
-//        }else{
-//            $orders = auth()->user()->orders()->paginate(5);
-//        }
-//        return view('orders.index',compact('orders'))
-//            ->with('i', (request()->input('page', 1) - 1) * 5);
-//    }
-
-    /**
-     * Show the form for creating a new resource.
-     *
-     */
-    public function create()
-    {
-        return view('orders.create');
-    }
 
     /**
      * Store a newly created resource in storage.
      *
      * @param Request $request
-     * @return RedirectResponse
      */
-    public function store(Request $request): RedirectResponse
+    public function store(Request $request)
     {
-        request()->validate([
+        $validated =request()->validate([
             'name' => 'required',
             'detail' => 'required',
         ]);
         \Log::info($request);
-        Order::create($request->all());
+        Order::create($validated);
 
-        return redirect()->route('orders.index')
-            ->with('success','Product created successfully.');
+
     }
 
     /**
@@ -79,7 +52,7 @@ class OrdersController extends Controller
      * @param Order $order
      * @return Application|Factory|View
      */
-    public function show(Order $order): Application|Factory|View
+    public function show(Order $order)
     {
         return view('orders.show',compact('order'));
     }
@@ -90,7 +63,7 @@ class OrdersController extends Controller
      * @param Order $order
      * @return Application|Factory|View
      */
-    public function edit(Order $order): View|Factory|Application
+    public function edit(Order $order)
     {
         return view('orders.edit',compact('order'));
     }
