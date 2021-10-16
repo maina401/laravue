@@ -46,11 +46,11 @@ export default {
     },
     maxFilesize: {
       type: Number,
-      default: 2,
+      default: 10,
     },
     maxFiles: {
       type: Number,
-      default: 3,
+      default: 5,
     },
     autoProcessQueue: {
       type: Boolean,
@@ -97,6 +97,9 @@ export default {
       thumbnailHeight: this.thumbnailHeight,
       maxFiles: this.maxFiles,
       maxFilesize: this.maxFilesize,
+      headers: {
+        'X-CSRF-TOKEN': document.head.querySelector('[name=csrf-token]').content,
+      },
       dictRemoveFile: 'Remove',
       addRemoveLinks: this.showRemoveLink,
       acceptedFiles: this.acceptedFiles,
@@ -156,14 +159,14 @@ export default {
       document.addEventListener('paste', this.pasteImg);
     }
 
-    this.dropzone.on('success', file => {
-      vm.$emit('dropzone-success', file, vm.dropzone.element);
+    this.dropzone.on('success', (file, response) => {
+      vm.$emit('dropzone-success', file, vm.dropzone.element, response);
     });
     this.dropzone.on('addedfile', file => {
       vm.$emit('dropzone-fileAdded', file);
     });
-    this.dropzone.on('removedfile', file => {
-      vm.$emit('dropzone-removedFile', file);
+    this.dropzone.on('removedfile', (file, response) => {
+      vm.$emit('dropzone-removedFile', file, response);
     });
     this.dropzone.on('error', (file, error, xhr) => {
       vm.$emit('dropzone-error', file, error, xhr);

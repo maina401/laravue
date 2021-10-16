@@ -128,7 +128,7 @@
         <el-button @click="dialogFormVisible = false">
           {{ $t('table.cancel') }}
         </el-button>
-        <el-button type="primary" @click="dialogStatus==='create'?createData():updateData()">
+        <el-button type="primary" @click="dialogStatus==='create'?createOrder():updateOrder()">
           {{ $t('table.confirm') }}
         </el-button>
       </div>
@@ -148,6 +148,7 @@
 
 <script>
 import { fetchList, fetchPv, createArticle, updateArticle } from '@/api/article';
+import { fetchList, fetchPv, createOrder, updateOrder } from '@/api/order';
 import waves from '@/directive/waves'; // Waves directive
 import { parseTime } from '@/utils';
 import Pagination from '@/components/Pagination'; // Secondary package based on el-pagination
@@ -283,23 +284,44 @@ export default {
         this.$refs['dataForm'].clearValidate();
       });
     },
-    createData() {
-      this.$refs['dataForm'].validate((valid) => {
+    createOrder() {
+      this.$refs['orderForm'].validate((valid) => {
         if (valid) {
-          this.temp.id = parseInt(Math.random() * 100) + 1024; // mock a id
-          this.temp.author = 'laravue';
-          createArticle(this.temp).then(() => {
-            this.list.unshift(this.temp);
-            this.dialogFormVisible = false;
-            this.$notify({
-              title: 'Success',
-              message: 'Created successfully',
-              type: 'success',
-              duration: 2000,
+          this.orderCreating = true;
+          orderResource
+            .store(this.newOrder)
+            .then(response => {
+              this.$message({
+                message: `New order ${this.newOrder.title} (${this.newOrder.category}) has been created successfully.`,
+                type: 'success',
+                duration: 5 * 1000,
+              });
+              this.resetNewOrder();
+              this.dialogFormVisible = false;
+              this.handleFilter();
+            })
+            .catch(error => {
+              console.log(error);
+            })
+            .finally(() => {
+              this.orderCreating = false;
             });
-          });
         }
       });
+    },
+    resetNewOrder() {
+      this.newOrder = {
+        title: '',
+        date: '',
+        time: '',
+        description: '',
+        pages: '',
+        amount: '',
+        instructions: '',
+        attachment: [],
+        category: '',
+        level: '',
+      };
     },
     handleUpdate(row) {
       this.temp = Object.assign({}, row); // copy obj

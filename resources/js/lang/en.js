@@ -151,6 +151,7 @@ export default {
     confirm: 'Confirm',
     keyword: 'Keyword',
     role: 'Role',
+    category: 'Category',
   },
   errorLog: {
     tips: 'Please click the bug icon in the upper right corner',
@@ -197,6 +198,7 @@ export default {
   order: {
     'category': 'Category',
     'deadline': 'Due Date',
+    'pages': 'Pages',
     'description': 'Order Description',
     'attachments': 'Additional Files',
     'title': 'Order Title',

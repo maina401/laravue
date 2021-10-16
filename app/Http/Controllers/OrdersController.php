@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Api;
+namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Models\Order;
@@ -8,6 +8,7 @@ use Exception;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Contracts\View\Factory;
 use Illuminate\Contracts\View\View;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -21,56 +22,44 @@ class OrdersController extends Controller
      *
      * @return Response
      */
-    function __construct()
+  /*  function __construct()
     {
         $this->middleware('permission:order-list|order-create|order-edit|order-delete', ['only' => ['index','show']]);
         $this->middleware('permission:order-create', ['only' => ['create','store']]);
         $this->middleware('permission:order-edit', ['only' => ['edit','update']]);
         $this->middleware('permission:order-delete', ['only' => ['destroy']]);
-    }
-//    /**
-//     * Display a listing of the resource.
-//     *
-//     * @return Application|Factory|View
-//     */
-//    public function index(): View|Factory|Application
-//    {
-//        if (auth()->user()->hasRole('Admin')) {
-//            $orders = Order::latest()->paginate(5);
-//
-//        }else{
-//            $orders = auth()->user()->orders()->paginate(5);
-//        }
-//        return view('orders.index',compact('orders'))
-//            ->with('i', (request()->input('page', 1) - 1) * 5);
-//    }
-
-    /**
-     * Show the form for creating a new resource.
-     *
-     */
-    public function create()
-    {
-        return view('orders.create');
-    }
+    }*/
 
     /**
      * Store a newly created resource in storage.
      *
      * @param Request $request
-     * @return RedirectResponse
      */
-    public function store(Request $request): RedirectResponse
+    public function store(Request $request)
     {
-        request()->validate([
-            'name' => 'required',
-            'detail' => 'required',
-        ]);
-        \Log::info($request);
-        Order::create($request->all());
 
-        return redirect()->route('orders.index')
-            ->with('success','Product created successfully.');
+        $validated =request()->validate([
+            'title' => 'required',
+            'date' => 'required',
+            'time' => 'required',
+            'description' => 'required',
+            'pages' => '',
+            'amount' => '',
+            'instructions' => '',
+            'attachment' => '',
+            'category' => 'required',
+            'level' => '',
+            'user_id' => '',
+        ]);
+        //TODO:Calculate Prices Dynamically
+        $validated['amount']=isset($validated["pages"])?$validated["pages"]*10:0;
+        \Log::info($validated['amount']);
+        $validated['user_id']=$request->user()->id;
+        \Log::info($validated);
+
+        Order::create($validated);
+
+
     }
 
     /**
@@ -79,7 +68,7 @@ class OrdersController extends Controller
      * @param Order $order
      * @return Application|Factory|View
      */
-    public function show(Order $order): Application|Factory|View
+    public function show(Order $order)
     {
         return view('orders.show',compact('order'));
     }
@@ -90,7 +79,7 @@ class OrdersController extends Controller
      * @param Order $order
      * @return Application|Factory|View
      */
-    public function edit(Order $order): View|Factory|Application
+    public function edit(Order $order)
     {
         return view('orders.edit',compact('order'));
     }
@@ -129,5 +118,26 @@ class OrdersController extends Controller
         return redirect()->route('orders.index')
             ->with('success','Product deleted successfully');
     }
+
+    /**
+     * Handle Order Uploads and attachments
+     *
+     * @param Request $request
+     * @return JsonResponse
+     */
+    public function attach(Request $request): JsonResponse
+    {
+        $request->validate([
+            'file'=>'required|mimes:jpeg,csv,doc,docx,zip,png,jpg,pdf'
+
+        ]);
+        $unique_id=Order::latest()->first()->id.'_'.uniqid();
+
+        $fileName = 'ATT_'.$unique_id.'_'.time() . '.' . $request->file->getClientOriginalExtension();
+        $path= $request->file->move(public_path('files/orders/attach'), $fileName);
+        return response()->json([ 'filename'=>$fileName,
+            'path'=>addslashes($path)]);
+    }
+
 
 }

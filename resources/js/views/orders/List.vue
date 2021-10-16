@@ -10,13 +10,13 @@
       />
       <el-select
         v-model="query.role"
-        :placeholder="$t('table.role')"
+        :placeholder="$t('table.category')"
         clearable
         style="width: 90px"
         class="filter-item"
         @change="handleFilter"
       >
-        <el-option v-for="item in roles" :key="item" :label="item | uppercaseFirst" :value="item" />
+        <el-option v-for="item in orderCategories" :key="item" :label="item | uppercaseFirst" :value="item" />
       </el-select>
       <el-button v-waves class="filter-item" type="primary" icon="el-icon-search" @click="handleFilter">
         {{ $t('table.search') }}
@@ -151,7 +151,6 @@
         </div>
       </div>
     </el-dialog>
-
     <el-dialog :title="'Create new Order'" :visible.sync="dialogFormVisible">
       <div v-loading="orderCreating" class="form-container">
         <el-form
@@ -161,7 +160,9 @@
           label-position="left"
           label-width="150px"
           style="max-width: 500px;"
+          @submit="validateBeforeSubmit"
         >
+
           <el-form-item :label="$t('order.category')" prop="category">
             <el-select v-model="newOrder.category" class="filter-item" placeholder="Please select Subject">
               <el-option v-for="item in orderCategories" :key="item" :label="item | uppercaseFirst" :value="item" />
@@ -176,6 +177,17 @@
             </el-col>
             <el-col :span="11">
               <el-time-picker v-model="newOrder.time" type="fixed-time" placeholder="Pick a time" style="width: 100%;" />
+            </el-col>
+          </el-form-item>
+          <el-form-item :label="$t('order.pages')" prop="pages">
+            <el-col :span="6">
+              <a @click="decrement()">&mdash;</a>
+            </el-col>
+            <el-col :span="6" class="line">
+              <el-input v-model="newOrder.pages" type="number" style="width: 100%;" />
+            </el-col>
+            <el-col :span="6">
+              <a @click="increment()">&#xff0b;</a>
             </el-col>
           </el-form-item>
           <el-form-item :label="$t('order.title')" prop="title">
@@ -196,10 +208,11 @@
               <dropzone
                 id="myVueDropzone"
                 v-model="newOrder.attachment"
-                url="https://httpbin.org/post"
+                url="/api/files/orders/attach"
                 @dropzone-removedFile="dropzoneR"
                 @dropzone-success="dropzoneS"
               />
+              <small>Up to 5 files. If more, compress to zip and upload</small>
             </div>
           </el-form-item>
         </el-form>
@@ -216,9 +229,6 @@
   </div>
 </template>
 <style scoped>
-.editor-content {
-  margin-top: 20px;
-}
 </style>
 <script>
 import Pagination from '@/components/Pagination'; // Secondary package based on el-pagination
@@ -236,7 +246,7 @@ const orderResource = new OrderResource();
 const permissionResource = new Resource('permissions');
 
 export default {
-  name: 'Orderist',
+  name: 'Orders',
   components: { Pagination, Tinymce, Dropzone },
   directives: { waves, permission },
   data() {
@@ -247,13 +257,13 @@ export default {
       loading: true,
       downloading: false,
       orderCreating: false,
+      quantity: 1,
       query: {
         page: 1,
         limit: 15,
         keyword: '',
         role: '',
       },
-      roles: ['management', 'psychology', 'Comp Science'],
       orderCategories: ['management', 'psychology', 'Comp Science'],
       newOrder: {},
       dialogFormVisible: false,
@@ -275,7 +285,15 @@ export default {
             message: 'A description is required. It will help writers understand it more.',
             trigger: 'blur',
           },
-          { length: 100, message: 'Enter a description that is at least 100 charachters', trigger: 'blur' },
+          { length: 100, message: 'Enter a description that is at least 100 characters', trigger: 'blur' },
+        ],
+        pages: [
+          {
+            required: true,
+            message: 'Select the number of pages',
+            trigger: 'blur',
+          },
+          { min: 1, message: 'Pages have to be more than one', trigger: 'blur' },
         ],
       },
       permissionProps: {
@@ -300,7 +318,6 @@ export default {
       });
       const rolePermissions = {
         id: -1, // Just a faked ID
-        name: 'Inherited from role',
         disabled: true,
         children: this.classifyPermissions(tmp).menu,
       };
@@ -367,6 +384,12 @@ export default {
       this.menuPermissions = menu;
       this.otherPermissions = other;
     },
+    validateBeforeSubmit(e) {
+      if (this.errors.any()) {
+        // Prevent the form from submitting
+        e.preventDefault();
+      }
+    },
 
     async getList() {
       const { limit, page } = this.query;
@@ -389,6 +412,16 @@ export default {
       this.$nextTick(() => {
         this.$refs['orderForm'].clearValidate();
       });
+    },
+    increment() {
+      this.pages++;
+    },
+    decrement() {
+      if (this.pages === 1) {
+        alert('Negative quantity not allowed');
+      } else {
+        this.pages--;
+      }
     },
     handleDelete(id, name) {
       this.$confirm('This will permanently delete user ' + name + '. Continue?', 'Warning', {
@@ -430,27 +463,29 @@ export default {
       });
     },
     createOrder() {
-      console.log('Form Is valid. Creating Order');
-      this.newOrder.title = [this.newOrder.title];
-      this.orderCreating = true;
-      orderResource
-        .store(this.newOrder)
-        .then(response => {
-          this.$message({
-            message: 'New order ' + this.newOrder.title + '(' + this.newOrder.category + ') has been created successfully.',
-            type: 'success',
-            duration: 5 * 1000,
-          });
-          this.resetNewOrder();
-          this.dialogFormVisible = false;
-          this.handleFilter();
-        })
-        .catch(error => {
-          console.log(error);
-        })
-        .finally(() => {
-          this.orderCreating = false;
-        });
+      this.$refs['orderForm'].validate((valid) => {
+        if (valid) {
+          this.orderCreating = true;
+          orderResource
+            .store(this.newOrder)
+            .then(response => {
+              this.$message({
+                message: `New order ${this.newOrder.title} (${this.newOrder.category}) has been created successfully.`,
+                type: 'success',
+                duration: 5 * 1000,
+              });
+              this.resetNewOrder();
+              this.dialogFormVisible = false;
+              this.handleFilter();
+            })
+            .catch(error => {
+              console.log(error);
+            })
+            .finally(() => {
+              this.orderCreating = false;
+            });
+        }
+      });
     },
     resetNewOrder() {
       this.newOrder = {
@@ -461,7 +496,7 @@ export default {
         pages: '',
         amount: '',
         instructions: '',
-        attachment: '',
+        attachment: [],
         category: '',
         level: '',
       };
@@ -475,7 +510,7 @@ export default {
         excel.export_json_to_excel({
           header: tHeader,
           data,
-          filename: 'user-list',
+          filename: 'order-list',
         });
         this.downloading = false;
       });
@@ -531,10 +566,23 @@ export default {
         this.dialogPermissionVisible = false;
       });
     },
-    dropzoneS(file) {
+    dropzoneS(file, ele, response) {
+      const Obj = { 'filename': file.upload.filename,
+        'filepath': response.path };
+      this.newOrder.attachment.push(Obj);
+      console.log(this.newOrder.attachment);
       this.$message({ message: 'Upload success', type: 'success' });
     },
     dropzoneR(file) {
+      let counter = 0;
+      const self = this;
+      this.newOrder.attachment.forEach(function(item) {
+        if (item.filename === file.upload.filename){
+          console.log(`Removing file ${item.filename}`);
+          self.newOrder.attachment.splice(counter, 1);
+          counter += 1;
+        }
+      });
       this.$message({ message: 'Delete success', type: 'success' });
     },
   },
@@ -573,4 +621,5 @@ export default {
     clear: left;
   }
 }
+
 </style>
